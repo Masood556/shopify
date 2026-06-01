@@ -1,33 +1,56 @@
-import { NextResponse } from "next/server";
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      message: "Method not allowed",
+    });
+  }
 
-export async function POST(req: Request) {
+  const { name, email, phone, message } = req.body;
+
   try {
-    const { name, email, phone, message } = await req.json();
-
-    const res=await fetch('https://api.copper.com/developer_api/v1/leads', {
-        method: 'POST',
+    const copperResponse = await fetch(
+      "https://api.copper.com/developer_api/v1/people",
+      {
+        method: "POST",
         headers: {
-          'X-PW-AccessToken': 'a673da1bb658fe05f991609b1352c917',
-          'X-PW-Application': 'developer_api',
-          'X-PW-UserEmail': '34898@gcslahore.edu.pk',
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
+          "X-PW-AccessToken": process.env.COPPER_API_KEY,
+          "X-PW-Application": "developer_api",
+          "X-PW-UserEmail": process.env.COPPER_USER_EMAIL,
         },
         body: JSON.stringify({
           name: name,
-          email: { email: email, category: 'work' },
-          phone_numbers: phone ? [{ number: phone, category: 'work' }] : [],
+          emails: [
+            {
+              email: email,
+            },
+          ],
+          phone_numbers: [
+            {
+              number: phone,
+            },
+          ],
           details: message,
-          source: 'Shopify Contact Form'
-        })
-      });
+        }),
+      }
+    );
 
-      console.log('✅ Lead sent to Copper CRM');
+    const result = await copperResponse.json();
 
-    const result = await res.json();
+    if (!copperResponse.ok) {
+      return res.status(500).json(result);
+    }
 
-    return NextResponse.json({data: result, success: true });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "failed" }, { status: 500 });
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error:unknown) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: (error as Error).message,
+    });
   }
 }
