@@ -1,4 +1,16 @@
 import { NextResponse } from "next/server";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
 
 export async function POST(req: Request) {
   try {
@@ -32,7 +44,12 @@ export async function POST(req: Request) {
 
     const result = await res.json();
 
-    return NextResponse.json({ data: result, success: true });
+    return NextResponse.json(
+      { data: result, success: true },
+      {
+        headers: corsHeaders,
+      },
+    );
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "failed" }, { status: 500 });
