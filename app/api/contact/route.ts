@@ -1,49 +1,31 @@
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   try {
-    // const { name, email, phone, message } = await req.json();
+    const { name, email, phone, message } = await req.json();
 
-    // 1. Create Person in Copper
-    // const copperRes = await fetch(
-    //   "https://api.copper.com/developer_api/v1/people",
-    //   {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "X-PW-AccessToken": process.env.COPPER_API_KEY!,
-    //       "X-PW-Application": "developer_api",
-    //       "X-PW-UserEmail": process.env.COPPER_USER_EMAIL!,
-    //     },
-    //     body: JSON.stringify({
-    //       name,
-    //       emails: [{ email }],
-    //       phone_numbers: phone ? [{ number: phone }] : [],
-    //     }),
-    //   }
-    // );
+    const res=await fetch('https://api.copper.com/developer_api/v1/leads', {
+        method: 'POST',
+        headers: {
+          'X-PW-AccessToken': 'a673da1bb658fe05f991609b1352c917',
+          'X-PW-Application': 'developer_api',
+          'X-PW-UserEmail': '34898@gcslahore.edu.pk',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: name,
+          email: { email: email, category: 'work' },
+          phone_numbers: phone ? [{ number: phone, category: 'work' }] : [],
+          details: message,
+          source: 'Shopify Contact Form'
+        })
+      });
 
-    // const person = await copperRes.json();
+      console.log('✅ Lead sent to Copper CRM');
 
-    // // 2. Add message as Note
-    // await fetch("https://api.copper.com/developer_api/v1/notes", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     "X-PW-AccessToken": process.env.COPPER_API_KEY!,
-    //     "X-PW-Application": "developer_api",
-    //     "X-PW-UserEmail": process.env.COPPER_USER_EMAIL!,
-    //   },
-    //   body: JSON.stringify({
-    //     parent: {
-    //       id: person.id,
-    //       type: "person",
-    //     },
-    //     content: message,
-    //   }),
-    // });
+    const result = await res.json();
 
-    return NextResponse.json({ message:"data",success: true });
+    return NextResponse.json({data: result, success: true });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "failed" }, { status: 500 });
